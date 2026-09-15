@@ -12,6 +12,7 @@ of the Dock, and opens the video stream in a separate window.
 - `rtsp://` and `rtsps://` playback through VLCKit;
 - RTSP over TCP with a small network buffer for local cameras;
 - manual URL entry, `⌘V`, and a dedicated Paste button;
+- one-click audio mute control in the viewer toolbar;
 - saved RTSP URL and language preference between launches;
 - saved viewer position, size, and display between launches;
 - automatic Russian interface for a Russian macOS locale and English for all
@@ -75,9 +76,10 @@ embeds `VLCKit.framework` and applies a local ad-hoc signature.
 
 ## Settings Storage
 
-The RTSP URL and language preference are stored in the app's `UserDefaults`
-under the `streamURL` and `appLanguage` keys. Clear removes the saved camera
-address. Credentials included directly in a URL are stored with that address.
+The RTSP URL, language preference, and mute state are stored in the app's
+`UserDefaults` under the `streamURL`, `appLanguage`, and `isMuted` keys. Clear
+removes the saved camera address. Credentials included directly in a URL are
+stored with that address.
 
 The System language option checks the preferred macOS locale at app launch. A
 Russian locale selects Russian; every other locale selects English.

@@ -41,6 +41,8 @@ enum LocalizedText {
   case englishLanguage
   case rtspNotConfigured
   case settings
+  case mute
+  case unmute
   case reconnect
   case restartStream
   case stopped
@@ -164,6 +166,8 @@ final class LocalizationManager {
     case .englishLanguage: "Английский"
     case .rtspNotConfigured: "RTSP не настроен"
     case .settings: "Настройки"
+    case .mute: "Выключить звук"
+    case .unmute: "Включить звук"
     case .reconnect: "Переподключить"
     case .restartStream: "Перезапустить трансляцию"
     case .stopped: "Остановлено"
@@ -205,6 +209,8 @@ final class LocalizationManager {
     case .englishLanguage: "English"
     case .rtspNotConfigured: "RTSP is not configured"
     case .settings: "Settings"
+    case .mute: "Mute"
+    case .unmute: "Unmute"
     case .reconnect: "Reconnect"
     case .restartStream: "Restart the stream"
     case .stopped: "Stopped"

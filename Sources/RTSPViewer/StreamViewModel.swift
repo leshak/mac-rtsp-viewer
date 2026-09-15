@@ -8,16 +8,20 @@ final class StreamViewModel {
   let player = VLCMediaPlayer()
 
   private(set) var streamURL: String
+  private(set) var isMuted: Bool
   private(set) var status: PlaybackStatus = .idle
   private(set) var playbackError: PlaybackError?
 
   private let defaults: UserDefaults
   private let streamURLKey = "streamURL"
+  private let mutedKey = "isMuted"
   @ObservationIgnored private var stateTask: Task<Void, Never>?
 
   init(defaults: UserDefaults = .standard) {
     self.defaults = defaults
     streamURL = defaults.string(forKey: streamURLKey) ?? ""
+    isMuted = defaults.bool(forKey: mutedKey)
+    applyMuteState()
   }
 
   deinit {
@@ -54,6 +58,7 @@ final class StreamViewModel {
     player.media = media
     status = .connecting
     player.play()
+    applyMuteState()
     startStateMonitoring()
   }
 
@@ -85,6 +90,12 @@ final class StreamViewModel {
     stop()
   }
 
+  func toggleMute() {
+    isMuted.toggle()
+    applyMuteState()
+    defaults.set(isMuted, forKey: mutedKey)
+  }
+
   func validatedURL(from value: String) -> URL? {
     guard
       let url = URL(string: value),
@@ -110,6 +121,8 @@ final class StreamViewModel {
   }
 
   private func refreshPlaybackStatus() {
+    applyMuteState()
+
     if player.hasVideoOut {
       status = .playing
       playbackError = nil
@@ -132,6 +145,10 @@ final class StreamViewModel {
     @unknown default:
       break
     }
+  }
+
+  private func applyMuteState() {
+    player.audio?.isMuted = isMuted
   }
 }
 

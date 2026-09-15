@@ -40,16 +40,29 @@ struct ContentView: View {
 
       Spacer()
 
-      Button {
-        isSettingsPresented = true
-      } label: {
-        Image(systemName: "gearshape.fill")
-          .font(.system(size: 14, weight: .semibold))
-          .frame(width: 30, height: 30)
+      HStack(spacing: 2) {
+        Button {
+          viewModel.toggleMute()
+        } label: {
+          Image(systemName: viewModel.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+            .font(.system(size: 14, weight: .semibold))
+            .frame(width: 30, height: 30)
+        }
+        .buttonStyle(.borderless)
+        .help(muteActionTitle)
+        .accessibilityLabel(muteActionTitle)
+
+        Button {
+          isSettingsPresented = true
+        } label: {
+          Image(systemName: "gearshape.fill")
+            .font(.system(size: 14, weight: .semibold))
+            .frame(width: 30, height: 30)
+        }
+        .buttonStyle(.borderless)
+        .help(localization.string(.settings))
+        .accessibilityLabel(localization.string(.settings))
       }
-      .buttonStyle(.borderless)
-      .help(localization.string(.settings))
-      .accessibilityLabel(localization.string(.settings))
     }
     .padding(.leading, 20)
     .padding(.trailing, 14)
@@ -94,6 +107,10 @@ struct ContentView: View {
     case .failed:
       .red
     }
+  }
+
+  private var muteActionTitle: String {
+    localization.string(viewModel.isMuted ? .unmute : .mute)
   }
 
   private func errorOverlay(message: String) -> some View {
