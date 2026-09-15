@@ -13,6 +13,7 @@ of the Dock, and opens the video stream in a separate window.
 - RTSP over TCP with a small network buffer for local cameras;
 - manual URL entry, `⌘V`, and a dedicated Paste button;
 - saved RTSP URL and language preference between launches;
+- saved viewer position, size, and display between launches;
 - automatic Russian interface for a Russian macOS locale and English for all
   other locales;
 - System, Russian, and English language options in Settings;

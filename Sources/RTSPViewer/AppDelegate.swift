@@ -91,8 +91,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     window.collectionBehavior = [.fullScreenPrimary]
     window.contentView = NSHostingView(rootView: contentView)
     window.delegate = self
-    window.setFrameAutosaveName("RTSPViewer.MainWindow")
     window.center()
+    // Frame restoration includes the saved display, so register autosaving after centering.
+    window.setFrameAutosaveName("RTSPViewer.MainWindow")
 
     mainWindow = window
   }
