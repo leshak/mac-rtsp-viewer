@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
   @Bindable var viewModel: StreamViewModel
+  @Bindable var localization: LocalizationManager
   @State private var isSettingsPresented = false
 
   var body: some View {
@@ -11,8 +12,8 @@ struct ContentView: View {
       VLCVideoView(player: viewModel.player)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-      if let errorMessage = viewModel.displayedErrorMessage {
-        errorOverlay(message: errorMessage)
+      if let playbackError = viewModel.playbackError {
+        errorOverlay(message: localization.playbackError(playbackError))
       }
 
       VStack(spacing: 0) {
@@ -23,7 +24,7 @@ struct ContentView: View {
     }
     .ignoresSafeArea()
     .sheet(isPresented: $isSettingsPresented) {
-      SettingsView(viewModel: viewModel)
+      SettingsView(viewModel: viewModel, localization: localization)
     }
   }
 
@@ -32,7 +33,7 @@ struct ContentView: View {
       VStack(alignment: .leading, spacing: 2) {
         Text("RTSP Viewer")
           .font(.headline)
-        Text(viewModel.streamHost)
+        Text(viewModel.streamHost ?? localization.string(.rtspNotConfigured))
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -47,8 +48,8 @@ struct ContentView: View {
           .frame(width: 30, height: 30)
       }
       .buttonStyle(.borderless)
-      .help("Настройки")
-      .accessibilityLabel("Настройки")
+      .help(localization.string(.settings))
+      .accessibilityLabel(localization.string(.settings))
     }
     .padding(.leading, 20)
     .padding(.trailing, 14)
@@ -63,7 +64,7 @@ struct ContentView: View {
         .fill(statusColor)
         .frame(width: 7, height: 7)
 
-      Text(viewModel.status.title)
+      Text(localization.statusTitle(viewModel.status))
         .font(.caption)
 
       Spacer()
@@ -71,11 +72,11 @@ struct ContentView: View {
       Button {
         viewModel.play()
       } label: {
-        Label("Переподключить", systemImage: "arrow.clockwise")
+        Label(localization.string(.reconnect), systemImage: "arrow.clockwise")
           .font(.caption)
       }
       .buttonStyle(.borderless)
-      .help("Перезапустить трансляцию")
+      .help(localization.string(.restartStream))
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 10)
@@ -101,7 +102,7 @@ struct ContentView: View {
         .font(.system(size: 34))
         .foregroundStyle(.secondary)
 
-      Text("Не удалось открыть трансляцию")
+      Text(localization.string(.couldNotOpenStream))
         .font(.headline)
 
       Text(message)
@@ -110,7 +111,7 @@ struct ContentView: View {
         .multilineTextAlignment(.center)
         .frame(maxWidth: 360)
 
-      Button("Открыть настройки") {
+      Button(localization.string(.openSettings)) {
         isSettingsPresented = true
       }
     }

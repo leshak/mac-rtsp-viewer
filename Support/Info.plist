@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDevelopmentRegion</key>
-    <string>ru</string>
+    <string>en</string>
     <key>CFBundleDisplayName</key>
     <string>RTSP Viewer</string>
     <key>CFBundleExecutable</key>
@@ -12,6 +12,11 @@
     <string>com.leshak.rtsp-viewer</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>ru</string>
+    </array>
     <key>CFBundleName</key>
     <string>RTSP Viewer</string>
     <key>CFBundlePackageType</key>
@@ -27,7 +32,7 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSLocalNetworkUsageDescription</key>
-    <string>RTSP Viewer подключается к камерам в локальной сети.</string>
+    <string>RTSP Viewer connects to cameras on your local network.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 </dict>

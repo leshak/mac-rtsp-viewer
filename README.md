@@ -1,87 +1,97 @@
+[Read this README in Russian](https://github.com/leshak/mac-rtsp-viewer/blob/master/README_RU.md)
+
 # RTSP Viewer
 
-Нативный просмотрщик RTSP-камер для macOS. Приложение работает из строки меню,
-не занимает место в Dock и открывает трансляцию в отдельном окне.
+A native RTSP camera viewer for macOS. The app lives in the menu bar, stays out
+of the Dock, and opens the video stream in a separate window.
 
-## Возможности
+## Features
 
-- иконка видеокамеры в строке меню;
-- показ и скрытие окна одним кликом;
-- воспроизведение `rtsp://` и `rtsps://` через VLCKit;
-- RTSP поверх TCP и небольшая задержка буфера для локальных камер;
-- ввод адреса вручную, вставка через `⌘V` или кнопку «Вставить»;
-- сохранение адреса между запусками;
-- переподключение к потоку без перезапуска приложения;
-- понятное сообщение при недоступной камере.
+- video camera icon in the menu bar;
+- show or hide the viewer with one click;
+- `rtsp://` and `rtsps://` playback through VLCKit;
+- RTSP over TCP with a small network buffer for local cameras;
+- manual URL entry, `⌘V`, and a dedicated Paste button;
+- saved RTSP URL and language preference between launches;
+- automatic Russian interface for a Russian macOS locale and English for all
+  other locales;
+- System, Russian, and English language options in Settings;
+- reconnect without restarting the app;
+- a clear error message when the camera is unavailable.
 
-В приложении нет предустановленного адреса камеры. При первом запуске откройте
-настройки и укажите собственный RTSP URL.
+The app does not include a preset camera address. Open Settings on the first
+launch and enter your own RTSP URL.
 
-## Требования
+## Requirements
 
-- macOS 15 или новее;
-- Xcode 26 или новее;
-- интернет при первой сборке: Swift Package Manager скачивает VLCKit/libVLC.
+- macOS 15 or later;
+- Xcode 26 or later;
+- an internet connection for the first build so Swift Package Manager can
+  download VLCKit/libVLC.
 
-## Быстрый старт
+## Quick Start
 
-Соберите приложение:
+Build the app:
 
 ```shell
 make app
 ```
 
-Запустите готовый пакет:
+Open the resulting bundle:
 
 ```shell
 open "build/RTSP Viewer.app"
 ```
 
-После запуска:
+After launch:
 
-1. Нажмите иконку видеокамеры в правой части строки меню.
-2. Откройте настройки кнопкой с шестерёнкой.
-3. Введите или вставьте RTSP URL.
-4. Нажмите «Сохранить» — трансляция запустится сразу.
+1. Click the video camera icon on the right side of the menu bar.
+2. Open Settings with the gear button.
+3. Enter or paste an RTSP URL.
+4. Choose an interface language if you do not want to follow the macOS locale.
+5. Click Save to start the stream immediately.
 
-Левый клик по иконке показывает или скрывает окно. Правый клик открывает меню
-завершения приложения.
+A left click on the menu bar icon shows or hides the window. A right click
+opens the Quit menu.
 
-## Разработка в Xcode
+## Development in Xcode
 
-1. Откройте [Package.swift](Package.swift) в Xcode.
-2. Выберите схему `RTSPViewer` и назначение `My Mac`.
-3. Нажмите Run.
+1. Open [Package.swift](Package.swift) in Xcode.
+2. Select the `RTSPViewer` scheme and the `My Mac` destination.
+3. Click Run.
 
-Доступные команды:
+Available commands:
 
-| Команда | Назначение |
+| Command | Purpose |
 | --- | --- |
-| `make build` | Debug-сборка через Swift Package Manager |
-| `make run` | Сборка и запуск из терминала |
-| `make app` | Release-сборка пакета `RTSP Viewer.app` |
-| `make clean` | Очистка результатов сборки |
+| `make build` | Build a debug executable with Swift Package Manager |
+| `make run` | Build and run from Terminal |
+| `make app` | Create a release `RTSP Viewer.app` bundle |
+| `make clean` | Remove build output |
 
-Готовое приложение создаётся в `build/RTSP Viewer.app`. Скрипт вкладывает
-`VLCKit.framework` в пакет и выполняет локальную ad-hoc подпись.
+The finished app is created at `build/RTSP Viewer.app`. The packaging script
+embeds `VLCKit.framework` and applies a local ad-hoc signature.
 
-## Хранение настроек
+## Settings Storage
 
-RTSP URL хранится в `UserDefaults` приложения под ключом `streamURL`. Кнопка
-«Очистить» удаляет сохранённый адрес. Пароли, указанные непосредственно внутри
-URL, сохраняются вместе с адресом.
+The RTSP URL and language preference are stored in the app's `UserDefaults`
+under the `streamURL` and `appLanguage` keys. Clear removes the saved camera
+address. Credentials included directly in a URL are stored with that address.
 
-## Структура проекта
+The System language option checks the preferred macOS locale at app launch. A
+Russian locale selects Russian; every other locale selects English.
 
-| Путь | Содержимое |
+## Project Structure
+
+| Path | Contents |
 | --- | --- |
-| `Sources/RTSPViewer` | AppKit/SwiftUI-код приложения |
-| `Support/Info.plist` | Метаданные status bar приложения |
-| `Scripts/build-app.sh` | Сборка и упаковка `.app` |
-| `Package.swift` | Зависимости и настройки Swift Package Manager |
+| `Sources/RTSPViewer` | AppKit and SwiftUI application code |
+| `Support` | App metadata and localized permission descriptions |
+| `Scripts/build-app.sh` | `.app` packaging script |
+| `Package.swift` | Swift Package Manager configuration and dependencies |
 
-## Видеодвижок и лицензия
+## Video Engine and License
 
-Проект использует [VLCKit](https://github.com/videolan/vlckit) и libVLC.
-VLCKit/libVLC распространяются на условиях LGPL 2.1. Код этого проекта — на
-условиях [MIT License](LICENSE).
+The project uses [VLCKit](https://github.com/videolan/vlckit) and libVLC.
+VLCKit/libVLC are distributed under LGPL 2.1. This project's source code is
+available under the [MIT License](LICENSE).

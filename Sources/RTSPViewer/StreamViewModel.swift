@@ -9,7 +9,7 @@ final class StreamViewModel {
 
   private(set) var streamURL: String
   private(set) var status: PlaybackStatus = .idle
-  private(set) var errorMessage: String?
+  private(set) var playbackError: PlaybackError?
 
   private let defaults: UserDefaults
   private let streamURLKey = "streamURL"
@@ -24,9 +24,9 @@ final class StreamViewModel {
     stateTask?.cancel()
   }
 
-  var streamHost: String {
+  var streamHost: String? {
     guard let url = URL(string: streamURL), let host = url.host else {
-      return "RTSP не настроен"
+      return nil
     }
 
     if let port = url.port {
@@ -36,17 +36,13 @@ final class StreamViewModel {
     return host
   }
 
-  var displayedErrorMessage: String? {
-    errorMessage
-  }
-
   func play() {
     player.stop()
-    errorMessage = nil
+    playbackError = nil
 
     guard let url = validatedURL(from: streamURL) else {
       status = .failed
-      errorMessage = "Укажите RTSP URL камеры в настройках."
+      playbackError = .missingURL
       return
     }
 
@@ -66,7 +62,7 @@ final class StreamViewModel {
     stateTask = nil
     player.stop()
     status = .idle
-    errorMessage = nil
+    playbackError = nil
   }
 
   @discardableResult
@@ -116,7 +112,7 @@ final class StreamViewModel {
   private func refreshPlaybackStatus() {
     if player.hasVideoOut {
       status = .playing
-      errorMessage = nil
+      playbackError = nil
       return
     }
 
@@ -125,10 +121,10 @@ final class StreamViewModel {
       status = .connecting
     case .playing, .esAdded:
       status = .playing
-      errorMessage = nil
+      playbackError = nil
     case .error:
       status = .failed
-      errorMessage = "Камера недоступна или отклонила подключение."
+      playbackError = .cameraUnavailable
     case .stopped, .ended, .paused:
       if status != .failed {
         status = .idle
@@ -144,17 +140,9 @@ enum PlaybackStatus: Equatable {
   case connecting
   case playing
   case failed
+}
 
-  var title: String {
-    switch self {
-    case .idle:
-      "Остановлено"
-    case .connecting:
-      "Подключение…"
-    case .playing:
-      "Трансляция"
-    case .failed:
-      "Ошибка"
-    }
-  }
+enum PlaybackError: Equatable {
+  case missingURL
+  case cameraUnavailable
 }

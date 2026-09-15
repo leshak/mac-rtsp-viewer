@@ -4,11 +4,16 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   private let viewModel = StreamViewModel()
+  private let localization = LocalizationManager()
   private var statusItem: NSStatusItem?
   private var mainWindow: NSWindow?
-  private lazy var statusMenu = makeStatusMenu()
+  private var statusMenu = NSMenu()
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    localization.onLanguageChange = { [weak self] in
+      self?.refreshLocalizedMenus()
+    }
+    statusMenu = makeStatusMenu()
     configureApplicationMenu()
     configureStatusItem()
     createMainWindow()
@@ -69,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   }
 
   private func createMainWindow() {
-    let contentView = ContentView(viewModel: viewModel)
+    let contentView = ContentView(viewModel: viewModel, localization: localization)
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 960, height: 600),
       styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
@@ -119,7 +124,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let menu = NSMenu()
 
     let openItem = NSMenuItem(
-      title: "Открыть RTSP Viewer",
+      title: localization.string(.openViewer),
       action: #selector(showMainWindowFromMenu(_:)),
       keyEquivalent: ""
     )
@@ -128,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     menu.addItem(.separator())
 
     let quitItem = NSMenuItem(
-      title: "Завершить RTSP Viewer",
+      title: localization.string(.quitViewer),
       action: #selector(quitApplication(_:)),
       keyEquivalent: "q"
     )
@@ -144,7 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let applicationMenu = NSMenu()
 
     let quitItem = NSMenuItem(
-      title: "Завершить RTSP Viewer",
+      title: localization.string(.quitViewer),
       action: #selector(quitApplication(_:)),
       keyEquivalent: "q"
     )
@@ -154,20 +159,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     mainMenu.addItem(applicationItem)
 
     let editItem = NSMenuItem()
-    let editMenu = NSMenu(title: "Правка")
-    editMenu.addItem(menuItem(title: "Отменить", action: Selector(("undo:")), key: "z"))
+    let editMenu = NSMenu(title: localization.string(.edit))
     editMenu.addItem(
-      menuItem(title: "Повторить", action: Selector(("redo:")), key: "z", shift: true))
+      menuItem(title: localization.string(.undo), action: Selector(("undo:")), key: "z"))
+    editMenu.addItem(
+      menuItem(
+        title: localization.string(.redo), action: Selector(("redo:")), key: "z", shift: true
+      ))
     editMenu.addItem(.separator())
-    editMenu.addItem(menuItem(title: "Вырезать", action: #selector(NSText.cut(_:)), key: "x"))
-    editMenu.addItem(menuItem(title: "Копировать", action: #selector(NSText.copy(_:)), key: "c"))
-    editMenu.addItem(menuItem(title: "Вставить", action: #selector(NSText.paste(_:)), key: "v"))
     editMenu.addItem(
-      menuItem(title: "Выбрать всё", action: #selector(NSText.selectAll(_:)), key: "a"))
+      menuItem(title: localization.string(.cut), action: #selector(NSText.cut(_:)), key: "x"))
+    editMenu.addItem(
+      menuItem(title: localization.string(.copy), action: #selector(NSText.copy(_:)), key: "c"))
+    editMenu.addItem(
+      menuItem(title: localization.string(.paste), action: #selector(NSText.paste(_:)), key: "v"))
+    editMenu.addItem(
+      menuItem(
+        title: localization.string(.selectAll), action: #selector(NSText.selectAll(_:)), key: "a"))
     editItem.submenu = editMenu
     mainMenu.addItem(editItem)
 
     NSApp.mainMenu = mainMenu
+  }
+
+  private func refreshLocalizedMenus() {
+    statusMenu = makeStatusMenu()
+    configureApplicationMenu()
   }
 
   private func menuItem(title: String, action: Selector, key: String, shift: Bool = false)
