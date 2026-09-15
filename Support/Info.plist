@@ -32,7 +32,7 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSLocalNetworkUsageDescription</key>
-    <string>RTSP Viewer connects to cameras on your local network.</string>
+    <string>RTSP Viewer connects to cameras and receives window automation requests on your local network.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 </dict>

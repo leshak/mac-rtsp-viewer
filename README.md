@@ -18,6 +18,8 @@ of the Dock, and opens the video stream in a separate window.
 - automatic Russian interface for a Russian macOS locale and English for all
   other locales;
 - System, Russian, and English language options in Settings;
+- a configurable HTTP hook that shows or hides the viewer from GET and POST requests;
+- optional automatic hiding after a timeout and an incoming-request debug log;
 - reconnect without restarting the app;
 - a clear error message when the camera is unavailable.
 
@@ -56,6 +58,26 @@ After launch:
 A left click on the menu bar icon shows or hides the window. A right click
 opens the Quit menu.
 
+## Window HTTP Hook
+
+The built-in HTTP server listens on all network interfaces. Its default endpoint
+is `http://<Mac-IP>:23456/show/` and accepts GET and POST requests:
+
+```shell
+curl "http://127.0.0.1:23456/show/?event=motion%20detected"
+curl -X POST --data "event=motion detected" "http://127.0.0.1:23456/show/"
+```
+
+For GET requests, query parameter names and values are URL-decoded before rule
+matching. For POST requests, the request body is matched as a UTF-8 string. The
+show and hide substrings, port, path segment, and automatic-hide timeout are all
+configurable in Settings. An empty show substring accepts every valid request;
+an empty hide substring disables that rule. When both rules match, hide takes
+priority. A timeout of `0` disables automatic hiding.
+
+Debug Mode opens a separate window showing the method and raw URL or BODY of
+incoming requests. The log keeps the 500 most recent requests in memory.
+
 ## Development in Xcode
 
 1. Open [Package.swift](Package.swift) in Xcode.
@@ -76,10 +98,9 @@ embeds `VLCKit.framework` and applies a local ad-hoc signature.
 
 ## Settings Storage
 
-The RTSP URL, language preference, and mute state are stored in the app's
-`UserDefaults` under the `streamURL`, `appLanguage`, and `isMuted` keys. Clear
-removes the saved camera address. Credentials included directly in a URL are
-stored with that address.
+The RTSP URL, language preference, mute state, and HTTP hook configuration are
+stored in the app's `UserDefaults`. Clear removes only the saved camera address.
+Credentials included directly in a URL are stored with that address.
 
 The System language option checks the preferred macOS locale at app launch. A
 Russian locale selects Russian; every other locale selects English.

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
   @Bindable var viewModel: StreamViewModel
+  @Bindable var activationHook: ActivationHookModel
   @Bindable var localization: LocalizationManager
   @State private var isSettingsPresented = false
 
@@ -18,13 +19,27 @@ struct ContentView: View {
 
       VStack(spacing: 0) {
         topBar
+
+        if viewModel.isDateTimeVisible {
+          HStack {
+            dateTimeOverlay
+            Spacer()
+          }
+          .padding(.leading, 16)
+          .padding(.top, 12)
+        }
+
         Spacer()
         bottomBar
       }
     }
     .ignoresSafeArea()
     .sheet(isPresented: $isSettingsPresented) {
-      SettingsView(viewModel: viewModel, localization: localization)
+      SettingsView(
+        viewModel: viewModel,
+        activationHook: activationHook,
+        localization: localization
+      )
     }
   }
 
@@ -96,6 +111,18 @@ struct ContentView: View {
     .background(.ultraThinMaterial)
   }
 
+  private var dateTimeOverlay: some View {
+    TimelineView(.periodic(from: .now, by: 1)) { context in
+      Text(formattedDateTime(context.date))
+        .font(.system(.body, design: .monospaced, weight: .semibold))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 6))
+    }
+    .allowsHitTesting(false)
+  }
+
   private var statusColor: Color {
     switch viewModel.status {
     case .idle:
@@ -111,6 +138,15 @@ struct ContentView: View {
 
   private var muteActionTitle: String {
     localization.string(viewModel.isMuted ? .unmute : .mute)
+  }
+
+  private func formattedDateTime(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.timeZone = .autoupdatingCurrent
+    formatter.dateFormat = "dd-MM-yyyy HH:mm:ss"
+    return formatter.string(from: date)
   }
 
   private func errorOverlay(message: String) -> some View {

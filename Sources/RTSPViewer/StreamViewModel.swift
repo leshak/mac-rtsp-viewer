@@ -9,18 +9,24 @@ final class StreamViewModel {
 
   private(set) var streamURL: String
   private(set) var isMuted: Bool
+  private(set) var isDateTimeVisible: Bool
   private(set) var status: PlaybackStatus = .idle
   private(set) var playbackError: PlaybackError?
 
   private let defaults: UserDefaults
   private let streamURLKey = "streamURL"
   private let mutedKey = "isMuted"
+  private let dateTimeVisibleKey = "isDateTimeVisible"
   @ObservationIgnored private var stateTask: Task<Void, Never>?
 
   init(defaults: UserDefaults = .standard) {
     self.defaults = defaults
     streamURL = defaults.string(forKey: streamURLKey) ?? ""
     isMuted = defaults.bool(forKey: mutedKey)
+    isDateTimeVisible =
+      defaults.object(forKey: dateTimeVisibleKey) == nil
+      ? true
+      : defaults.bool(forKey: dateTimeVisibleKey)
     applyMuteState()
   }
 
@@ -94,6 +100,13 @@ final class StreamViewModel {
     isMuted.toggle()
     applyMuteState()
     defaults.set(isMuted, forKey: mutedKey)
+  }
+
+  func setDateTimeVisible(_ isVisible: Bool) {
+    guard isDateTimeVisible != isVisible else { return }
+
+    isDateTimeVisible = isVisible
+    defaults.set(isVisible, forKey: dateTimeVisibleKey)
   }
 
   func validatedURL(from value: String) -> URL? {

@@ -5,8 +5,10 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   private let viewModel = StreamViewModel()
   private let localization = LocalizationManager()
+  private let activationHook = ActivationHookModel()
   private var statusItem: NSStatusItem?
   private var mainWindow: NSWindow?
+  private var debugLogWindow: NSWindow?
   private var statusMenu = NSMenu()
 
   func applicationDidFinishLaunching(_ notification: Notification) {
@@ -17,10 +19,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     configureApplicationMenu()
     configureStatusItem()
     createMainWindow()
+    configureActivationHook()
 
     if ProcessInfo.processInfo.arguments.contains("--show-window") {
       showMainWindow()
     }
+  }
+
+  func applicationWillTerminate(_ notification: Notification) {
+    activationHook.stop()
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -28,6 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   }
 
   func windowWillClose(_ notification: Notification) {
+    activationHook.cancelPendingClose()
     viewModel.stop()
   }
 
@@ -74,7 +82,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   }
 
   private func createMainWindow() {
-    let contentView = ContentView(viewModel: viewModel, localization: localization)
+    let contentView = ContentView(
+      viewModel: viewModel,
+      activationHook: activationHook,
+      localization: localization
+    )
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 960, height: 600),
       styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
@@ -102,15 +114,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     guard let mainWindow else { return }
 
     if mainWindow.isVisible, !mainWindow.isMiniaturized {
-      mainWindow.orderOut(nil)
-      viewModel.stop()
+      hideMainWindow()
     } else {
       showMainWindow()
     }
   }
 
-  private func showMainWindow() {
+  private func showMainWindow(cancelHookTimeout: Bool = true) {
     guard let mainWindow else { return }
+    let shouldStartPlayback = !mainWindow.isVisible
+
+    if cancelHookTimeout {
+      activationHook.cancelPendingClose()
+    }
 
     if mainWindow.isMiniaturized {
       mainWindow.deminiaturize(nil)
@@ -118,7 +134,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     NSApp.activate(ignoringOtherApps: true)
     mainWindow.makeKeyAndOrderFront(nil)
-    viewModel.play()
+    if shouldStartPlayback {
+      viewModel.play()
+    }
+  }
+
+  private func hideMainWindow(cancelHookTimeout: Bool = true) {
+    if cancelHookTimeout {
+      activationHook.cancelPendingClose()
+    }
+
+    mainWindow?.orderOut(nil)
+    viewModel.stop()
+  }
+
+  private func configureActivationHook() {
+    activationHook.onShowRequested = { [weak self] in
+      self?.showMainWindow(cancelHookTimeout: false)
+    }
+    activationHook.onHideRequested = { [weak self] in
+      self?.hideMainWindow(cancelHookTimeout: false)
+    }
+    activationHook.onDebugLoggingChange = { [weak self] isEnabled in
+      if isEnabled {
+        self?.showDebugLogWindow()
+      } else {
+        self?.debugLogWindow?.orderOut(nil)
+      }
+    }
+
+    activationHook.start()
+    if activationHook.isDebugLoggingEnabled {
+      showDebugLogWindow()
+    }
+  }
+
+  private func showDebugLogWindow() {
+    if debugLogWindow == nil {
+      let logView = ActivationHookLogView(model: activationHook, localization: localization)
+      let window = NSWindow(
+        contentRect: NSRect(x: 0, y: 0, width: 720, height: 420),
+        styleMask: [.titled, .closable, .miniaturizable, .resizable],
+        backing: .buffered,
+        defer: false
+      )
+      window.title = localization.string(.incomingRequestLog)
+      window.isReleasedWhenClosed = false
+      window.minSize = NSSize(width: 520, height: 260)
+      window.contentView = NSHostingView(rootView: logView)
+      window.center()
+      window.setFrameAutosaveName("RTSPViewer.ActivationHookLogWindow")
+      debugLogWindow = window
+    }
+
+    guard let debugLogWindow else { return }
+    if debugLogWindow.isMiniaturized {
+      debugLogWindow.deminiaturize(nil)
+    }
+    NSApp.activate(ignoringOtherApps: true)
+    debugLogWindow.makeKeyAndOrderFront(nil)
   }
 
   private func makeStatusMenu() -> NSMenu {
@@ -186,6 +260,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   private func refreshLocalizedMenus() {
     statusMenu = makeStatusMenu()
     configureApplicationMenu()
+    debugLogWindow?.title = localization.string(.incomingRequestLog)
   }
 
   private func menuItem(title: String, action: Selector, key: String, shift: Bool = false)

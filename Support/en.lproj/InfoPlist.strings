@@ -1,1 +1,1 @@
-"NSLocalNetworkUsageDescription" = "RTSP Viewer connects to cameras on your local network.";
+"NSLocalNetworkUsageDescription" = "RTSP Viewer connects to cameras and receives window automation requests on your local network.";

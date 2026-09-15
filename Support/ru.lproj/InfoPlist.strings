@@ -1,1 +1,1 @@
-"NSLocalNetworkUsageDescription" = "RTSP Viewer подключается к камерам в локальной сети.";
+"NSLocalNetworkUsageDescription" = "RTSP Viewer подключается к камерам и принимает запросы управления окном в локальной сети.";
